@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "axios": "^0.19.2"
+    "axios": "^0.19.2",
+    "puppeteer": "^3.0.2"
   }
 }
