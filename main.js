@@ -17,10 +17,18 @@ const { rootURL, email, password } = require('./credentials.json');
   const uncompletedProblems = await page.evaluate(() => {
     const problemRows = [...document.querySelectorAll('tbody > tr')];
     return problemRows.
-      filter((row) => (
-        !row.className.includes('complete')
-        && row.getAttribute('role') === 'row'
-      ))
+      filter((row) => {
+        const problemName = row.querySelector('td:nth-child(5)');
+        if (!problemName) {
+          return false;
+        }
+        const isDailyTask = problemName
+          .innerText
+          .includes('일일학습');
+        return !row.className.includes('complete')
+          && row.getAttribute('role') === 'row'
+          && isDailyTask;
+      })
       .map((row) => row.getAttribute('value'));
   });
   console.log(uncompletedProblems);
@@ -65,7 +73,16 @@ const { rootURL, email, password } = require('./credentials.json');
             const selectors = [...document.querySelectorAll('table#Answer tr')].slice(1);
             selectors.forEach((selector, problemNumber) => {
               const badges = [...selector.querySelectorAll('span.badge')];
-              const badgeNumber = answers[problemNumber] - 1;
+
+              const answer = (() => {
+                const random =  Math.random() * 100;
+                if (random <= 50) {
+                  return answers[problemNumber];
+                }
+                return Math.floor(Math.random() * 5 + 1);
+              })();
+
+              const badgeNumber = answer - 1;
               badges[badgeNumber].click();
             });
             console.log('✅ Checked all 📝');
