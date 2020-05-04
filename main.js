@@ -16,8 +16,8 @@ const { rootURL, email, password } = require('./credentials.json');
 
   const uncompletedProblems = await page.evaluate(() => {
     const problemRows = [...document.querySelectorAll('tbody > tr')];
-    return problemRows.
-      filter((row) => {
+    return problemRows
+      .filter((row) => {
         const problemName = row.querySelector('td:nth-child(5)');
         if (!problemName) {
           return false;
@@ -46,16 +46,14 @@ const { rootURL, email, password } = require('./credentials.json');
         }];
       });
       console.log(values);
-      const type = 'BUtOQk2lrOEvgMiauV9y0Q{e}{e}';
+      const type = 'ymWuGYYSOfmJLRPkt3xlfw{e}{e}';
 
-      const response = await page.evaluate((values, type) => {
-        return $.ajax({
-          url: '/Utils/TestDetailPrint',
-          data: { values, type },
-          type: 'POST',
-          async: false,
-        });
-      }, values, type);
+      const response = await page.evaluate((values, type) => $.ajax({
+        url: '/Utils/TestDetailPrint',
+        data: { values, type },
+        type: 'POST',
+        async: false,
+      }), values, type);
       const { Table01: array } = response;
       const keys = Object.keys(array);
       const answers = keys.map((key) => Number(array[key].QST_CORRECT));
