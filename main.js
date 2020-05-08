@@ -70,8 +70,13 @@ const { rootURL, email, password } = require('./credentials.json');
           await page.evaluate((answers) => {
             const selectors = [...document.querySelectorAll('table#Answer tr')].slice(1);
             selectors.forEach((selector, problemNumber) => {
-              const badges = [...selector.querySelectorAll('span.badge')];
+              const subjectiveInput = selector.querySelector('input');
+              if (subjectiveInput) {
+                subjectiveInput.value = answers[problemNumber];
+                return;
+              }
 
+              const badges = [...selector.querySelectorAll('span.badge')];
               const answer = (() => {
                 const random =  Math.random() * 100;
                 if (random <= 50) {
