@@ -114,7 +114,7 @@ const {
           }, problemName, perfectWhenSubject, answers);
 
           const timeoutBias = Math.floor(Math.random() * 6);
-          const timeoutDelay = 20 * 1000 + timeoutBias;
+          const timeoutDelay = (20 + timeoutBias) * 1000;
 
           setTimeout(
             async () => {
