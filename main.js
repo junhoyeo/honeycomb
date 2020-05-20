@@ -1,5 +1,10 @@
 const puppeteer = require('puppeteer');
-const { rootURL, email, password } = require('./credentials.json');
+const {
+  rootURL,
+  email,
+  password,
+  perfect: perfectWhenSubject,
+} = require('./credentials.json');
 
 (async () => {
   const browser = await puppeteer.launch({
@@ -17,27 +22,41 @@ const { rootURL, email, password } = require('./credentials.json');
   const uncompletedProblems = await page.evaluate(() => {
     const problemRows = [...document.querySelectorAll('tbody > tr')];
     return problemRows
-      .filter((row) => {
+      .flatMap((row) => {
         const problemName = row.querySelector('td:nth-child(5)');
         if (!problemName) {
           return false;
         }
-        const isDailyTask = problemName
-          .innerText
-          .includes('일일학습');
-        return !row.className.includes('complete')
+
+        const problemNameText = problemName.innerText;
+        const isDailyTask = problemNameText.includes('일일학습');
+        const isValidTask = !row.className.includes('complete')
           && row.getAttribute('role') === 'row'
           && isDailyTask;
-      })
-      .map((row) => row.getAttribute('value'));
+
+        if (isValidTask) {
+          return [
+            {
+              name: problemNameText,
+              value: row.getAttribute('value'),
+            },
+          ];
+        }
+        return [];
+      });
   });
   console.log(uncompletedProblems);
 
-  const problemValue = uncompletedProblems[0];
+  const {
+    name: problemName,
+    value: problemValue,
+  } = uncompletedProblems[0];
   await page.click(`tr[value='${problemValue}']`);
 
   setTimeout(
     async () => {
+      console.log(`📔 Solving '${problemName}'`);
+
       const values = await page.evaluate(() => {
         const element = document.querySelector('#TestDetail-table > tbody > tr');
         return [{
@@ -67,7 +86,7 @@ const { rootURL, email, password } = require('./credentials.json');
 
       setTimeout(
         async () => {
-          await page.evaluate((answers) => {
+          await page.evaluate((problemName, perfectWhenSubject, answers) => {
             const selectors = [...document.querySelectorAll('table#Answer tr')].slice(1);
             selectors.forEach((selector, problemNumber) => {
               const subjectiveInput = selector.querySelector('input');
@@ -78,6 +97,9 @@ const { rootURL, email, password } = require('./credentials.json');
 
               const badges = [...selector.querySelectorAll('span.badge')];
               const answer = (() => {
+                if (perfectWhenSubject && problemName.includes(perfectWhenSubject)) {
+                  return answers[problemNumber];
+                }
                 const random =  Math.random() * 100;
                 if (random <= 50) {
                   return answers[problemNumber];
@@ -89,7 +111,7 @@ const { rootURL, email, password } = require('./credentials.json');
               badges[badgeNumber].click();
             });
             console.log('✅ Checked all 📝');
-          }, answers);
+          }, problemName, perfectWhenSubject, answers);
 
           const timeoutBias = Math.floor(Math.random() * 6);
           const timeoutDelay = 20 * 1000 + timeoutBias;
