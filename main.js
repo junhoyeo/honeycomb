@@ -72,7 +72,7 @@ const { rootURL, email, password } = require('./credentials.json');
             selectors.forEach((selector, problemNumber) => {
               const subjectiveInput = selector.querySelector('input');
               if (subjectiveInput) {
-                subjectiveInput.value = answers[problemNumber];
+                subjectiveInput.value = answers[problemNumber] || '.';
                 return;
               }
 
@@ -91,6 +91,9 @@ const { rootURL, email, password } = require('./credentials.json');
             console.log('✅ Checked all 📝');
           }, answers);
 
+          const timeoutBias = Math.floor(Math.random() * 6);
+          const timeoutDelay = 20 * 1000 + timeoutBias;
+
           setTimeout(
             async () => {
               await page.evaluate(() => {
@@ -107,7 +110,8 @@ const { rootURL, email, password } = require('./credentials.json');
                 1500,
               );
             },
-            20 * 1000,
+            // timeout before submit
+            timeoutDelay,
           );
         },
         1500,
