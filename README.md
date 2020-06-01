@@ -38,5 +38,5 @@ yarn
 > My life is little legeno
 
 1. Set rootURL and user credentials in [credentials.json](./credentials.json).
-2. Run [main.js](./main.js)
+2. Run `yarn start`
 3. Profit! 🙌
