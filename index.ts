@@ -9,6 +9,11 @@ import {
 
 declare const $: JQueryStatic;
 
+interface IProblem {
+  name: string;
+  value: string;
+}
+
 const delayForMilliseconds = (delay: number) => {
   return new Promise((resolve, _) => {
     setTimeout(() => {
@@ -35,10 +40,11 @@ const solveProblems = async () => {
   const uncompletedProblems = await page.evaluate((searchText: string) => {
     const problemRows = [...document.querySelectorAll('tbody > tr')];
     return problemRows
+      // @ts-ignore
       .flatMap((row) => {
         const problemName = row.querySelector('td:nth-child(5)') as HTMLTableDataCellElement;
         if (!problemName) {
-          return [];
+          return false;
         }
         const problemNameText = problemName.innerText;
         const isDailyTask = problemNameText.includes(searchText);
@@ -68,7 +74,7 @@ const solveProblems = async () => {
   const {
     name: problemName,
     value: problemValue,
-  } = uncompletedProblems[0];
+  } = uncompletedProblems[0] as IProblem;
   await page.click(`tr[value='${problemValue}']`);
 
   await delayForMilliseconds(500);
