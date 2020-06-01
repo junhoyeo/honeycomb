@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable"
+    ],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "types": [
+      "node",
+      "./node_modules/@types/jquery/JQueryStatic"
+    ],
+    "rootDir": "./",
+    "strict": true,
+    "inlineSourceMap": true,
+    "noImplicitReturns": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "./index.ts"
+  ]
+}

@@ -1,5 +1,6 @@
 credentials.json
 node_modules/
 .DS_Store
-*.png
 !illust.png
+*.png
+*.js

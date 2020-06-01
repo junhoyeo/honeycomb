@@ -1,13 +1,15 @@
-const puppeteer = require('puppeteer');
-const {
+import * as puppeteer from 'puppeteer';
+import {
   rootURL,
   email,
   password,
-  perfect: perfectWhenSubject,
-  search: searchText,
-} = require('./credentials.json');
+  perfect as perfectWhenSubject,
+  search as searchText,
+} from './credentials.json';
 
-const delayForMilliseconds = (delay) => {
+declare const $: JQueryStatic;
+
+const delayForMilliseconds = (delay: number) => {
   return new Promise((resolve, _) => {
     setTimeout(() => {
       resolve();
@@ -23,20 +25,21 @@ const solveProblems = async () => {
 
   await page.goto(rootURL);
 
-  await page.$eval('#loginID', (el, email) => el.value = email, email);
-  await page.$eval('#loginPW', (el, password) => el.value = password, password);
+  await page.$eval('#loginID', (element, email: string) =>
+    (element as HTMLInputElement).value = email, email);
+  await page.$eval('#loginPW', (element, password: string) =>
+    (element as HTMLInputElement).value = password, password);
   await page.click('div.login-buttons > button:first-child');
   await page.goto(`${rootURL}/StudentStudy/TaskList`);
 
-  const uncompletedProblems = await page.evaluate((searchText) => {
+  const uncompletedProblems = await page.evaluate((searchText: string) => {
     const problemRows = [...document.querySelectorAll('tbody > tr')];
     return problemRows
       .flatMap((row) => {
-        const problemName = row.querySelector('td:nth-child(5)');
+        const problemName = row.querySelector('td:nth-child(5)') as HTMLTableDataCellElement;
         if (!problemName) {
-          return false;
+          return [];
         }
-
         const problemNameText = problemName.innerText;
         const isDailyTask = problemNameText.includes(searchText);
         const isValidTask = !row.className.includes('complete')
@@ -56,6 +59,12 @@ const solveProblems = async () => {
   }, searchText);
   console.log(uncompletedProblems);
 
+  if (!uncompletedProblems.length) {
+    console.log('🙌 All problems solved!');
+    await browser.close();
+    return;
+  }
+
   const {
     name: problemName,
     value: problemValue,
@@ -67,6 +76,7 @@ const solveProblems = async () => {
 
   const values = await page.evaluate(() => {
     const element = document.querySelector('#TestDetail-table > tbody > tr');
+    if (!element) return [];
     return [{
       value: element.getAttribute('value'),
       detailvalue: element.getAttribute('detailvalue'),
@@ -75,7 +85,7 @@ const solveProblems = async () => {
   console.log(values);
   const type = 'ymWuGYYSOfmJLRPkt3xlfw{e}{e}';
 
-  const response = await page.evaluate((values, type) => $.ajax({
+  const response = await page.evaluate((values: string[], type: string) => $.ajax({
     url: '/Utils/TestDetailPrint',
     data: { values, type },
     type: 'POST',
@@ -87,18 +97,19 @@ const solveProblems = async () => {
   console.log(answers);
 
   await page.evaluate(() => {
-    document
-      .querySelector('div.gotoStudy')
-      .click();
+    const element = document.querySelector('div.gotoStudy') as HTMLDivElement;
+    if (element) {
+      element.click();
+    }
   });
 
   await delayForMilliseconds(1500);
-  await page.evaluate((problemName, perfectWhenSubject, answers) => {
+  await page.evaluate((problemName: string, perfectWhenSubject: string, answers: number[]) => {
     const selectors = [...document.querySelectorAll('table#Answer tr')].slice(1);
     selectors.forEach((selector, problemNumber) => {
       const subjectiveInput = selector.querySelector('input');
       if (subjectiveInput) {
-        subjectiveInput.value = answers[problemNumber] || '.';
+        subjectiveInput.value = (answers[problemNumber] || '.') as string;
         return;
       }
 
@@ -115,7 +126,7 @@ const solveProblems = async () => {
       })();
 
       const badgeNumber = answer - 1;
-      badges[badgeNumber].click();
+      (badges[badgeNumber] as HTMLSpanElement).click();
     });
     console.log('✅ Checked all 📝');
   }, problemName, perfectWhenSubject, answers);
@@ -125,9 +136,10 @@ const solveProblems = async () => {
   await delayForMilliseconds(timeoutDelayBeforeSubmit);
 
   await page.evaluate(() => {
-    document
-      .querySelector('div.AnswerSubmit > a')
-      .click();
+    const element = document.querySelector('div.AnswerSubmit > a') as HTMLAnchorElement;
+    if (element) {
+      element.click();
+    }
   });
 
   await delayForMilliseconds(1500);
