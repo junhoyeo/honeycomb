@@ -4,9 +4,18 @@ const {
   email,
   password,
   perfect: perfectWhenSubject,
+  search: searchText,
 } = require('./credentials.json');
 
-(async () => {
+const delayForMilliseconds = (delay) => {
+  return new Promise((resolve, _) => {
+    setTimeout(() => {
+      resolve();
+    }, delay);
+  });
+}
+
+const solveProblems = async () => {
   const browser = await puppeteer.launch({
     dumpio: true,
   });
@@ -19,7 +28,7 @@ const {
   await page.click('div.login-buttons > button:first-child');
   await page.goto(`${rootURL}/StudentStudy/TaskList`);
 
-  const uncompletedProblems = await page.evaluate(() => {
+  const uncompletedProblems = await page.evaluate((searchText) => {
     const problemRows = [...document.querySelectorAll('tbody > tr')];
     return problemRows
       .flatMap((row) => {
@@ -29,7 +38,7 @@ const {
         }
 
         const problemNameText = problemName.innerText;
-        const isDailyTask = problemNameText.includes('일일학습');
+        const isDailyTask = problemNameText.includes(searchText);
         const isValidTask = !row.className.includes('complete')
           && row.getAttribute('role') === 'row'
           && isDailyTask;
@@ -44,7 +53,7 @@ const {
         }
         return [];
       });
-  });
+  }, searchText);
   console.log(uncompletedProblems);
 
   const {
@@ -53,92 +62,79 @@ const {
   } = uncompletedProblems[0];
   await page.click(`tr[value='${problemValue}']`);
 
-  setTimeout(
-    async () => {
-      console.log(`📔 Solving '${problemName}'`);
+  await delayForMilliseconds(500);
+  console.log(`📔 Solving '${problemName}'`);
 
-      const values = await page.evaluate(() => {
-        const element = document.querySelector('#TestDetail-table > tbody > tr');
-        return [{
-          value: element.getAttribute('value'),
-          detailvalue: element.getAttribute('detailvalue'),
-        }];
-      });
-      console.log(values);
-      const type = 'ymWuGYYSOfmJLRPkt3xlfw{e}{e}';
+  const values = await page.evaluate(() => {
+    const element = document.querySelector('#TestDetail-table > tbody > tr');
+    return [{
+      value: element.getAttribute('value'),
+      detailvalue: element.getAttribute('detailvalue'),
+    }];
+  });
+  console.log(values);
+  const type = 'ymWuGYYSOfmJLRPkt3xlfw{e}{e}';
 
-      const response = await page.evaluate((values, type) => $.ajax({
-        url: '/Utils/TestDetailPrint',
-        data: { values, type },
-        type: 'POST',
-        async: false,
-      }), values, type);
-      const { Table01: array } = response;
-      const keys = Object.keys(array);
-      const answers = keys.map((key) => Number(array[key].QST_CORRECT));
-      console.log(answers);
+  const response = await page.evaluate((values, type) => $.ajax({
+    url: '/Utils/TestDetailPrint',
+    data: { values, type },
+    type: 'POST',
+    async: false,
+  }), values, type);
+  const { Table01: array } = response;
+  const keys = Object.keys(array);
+  const answers = keys.map((key) => Number(array[key].QST_CORRECT));
+  console.log(answers);
 
-      await page.evaluate(() => {
-        document
-          .querySelector('div.gotoStudy')
-          .click();
-      });
+  await page.evaluate(() => {
+    document
+      .querySelector('div.gotoStudy')
+      .click();
+  });
 
-      setTimeout(
-        async () => {
-          await page.evaluate((problemName, perfectWhenSubject, answers) => {
-            const selectors = [...document.querySelectorAll('table#Answer tr')].slice(1);
-            selectors.forEach((selector, problemNumber) => {
-              const subjectiveInput = selector.querySelector('input');
-              if (subjectiveInput) {
-                subjectiveInput.value = answers[problemNumber] || '.';
-                return;
-              }
+  await delayForMilliseconds(1500);
+  await page.evaluate((problemName, perfectWhenSubject, answers) => {
+    const selectors = [...document.querySelectorAll('table#Answer tr')].slice(1);
+    selectors.forEach((selector, problemNumber) => {
+      const subjectiveInput = selector.querySelector('input');
+      if (subjectiveInput) {
+        subjectiveInput.value = answers[problemNumber] || '.';
+        return;
+      }
 
-              const badges = [...selector.querySelectorAll('span.badge')];
-              const answer = (() => {
-                if (perfectWhenSubject && problemName.includes(perfectWhenSubject)) {
-                  return answers[problemNumber];
-                }
-                const random =  Math.random() * 100;
-                if (random <= 50) {
-                  return answers[problemNumber];
-                }
-                return Math.floor(Math.random() * 5 + 1);
-              })();
+      const badges = [...selector.querySelectorAll('span.badge')];
+      const answer = (() => {
+        if (perfectWhenSubject && problemName.includes(perfectWhenSubject)) {
+          return answers[problemNumber];
+        }
+        const random =  Math.random() * 100;
+        if (random <= 50) {
+          return answers[problemNumber];
+        }
+        return Math.floor(Math.random() * 5 + 1);
+      })();
 
-              const badgeNumber = answer - 1;
-              badges[badgeNumber].click();
-            });
-            console.log('✅ Checked all 📝');
-          }, problemName, perfectWhenSubject, answers);
+      const badgeNumber = answer - 1;
+      badges[badgeNumber].click();
+    });
+    console.log('✅ Checked all 📝');
+  }, problemName, perfectWhenSubject, answers);
 
-          const timeoutBias = Math.floor(Math.random() * 6);
-          const timeoutDelay = (20 + timeoutBias) * 1000;
+  const timeoutBias = Math.floor(Math.random() * 6);
+  const timeoutDelayBeforeSubmit = (20 + timeoutBias) * 1000;
+  await delayForMilliseconds(timeoutDelayBeforeSubmit);
 
-          setTimeout(
-            async () => {
-              await page.evaluate(() => {
-                document
-                  .querySelector('div.AnswerSubmit > a')
-                  .click();
-              });
+  await page.evaluate(() => {
+    document
+      .querySelector('div.AnswerSubmit > a')
+      .click();
+  });
 
-              setTimeout(
-                async () => {
-                  await page.screenshot({path: 'example.png'});
-                  await browser.close();
-                },
-                1500,
-              );
-            },
-            // timeout before submit
-            timeoutDelay,
-          );
-        },
-        1500,
-      );
-    },
-    500,
-  );
+  await delayForMilliseconds(1500);
+  await page.screenshot({path: 'example.png'});
+  await browser.close();
+};
+
+(async () => {
+  await solveProblems();
 })();
