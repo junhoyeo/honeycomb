@@ -28,14 +28,14 @@ const solveProblems = async () => {
   });
   const page = await browser.newPage();
 
-  await page.goto(rootURL);
+  await page.goto(rootURL, { timeout: 0 });
 
   await page.$eval('#loginID', (element, email: string) =>
     (element as HTMLInputElement).value = email, email);
   await page.$eval('#loginPW', (element, password: string) =>
     (element as HTMLInputElement).value = password, password);
   await page.click('div.login-buttons > button:first-child');
-  await page.goto(`${rootURL}/StudentStudy/TaskList`);
+  await page.goto(`${rootURL}/StudentStudy/TaskList`, { timeout: 0 });
 
   const uncompletedProblems = await page.evaluate((searchText: string) => {
     const problemRows = [...document.querySelectorAll('tbody > tr')];
@@ -112,6 +112,7 @@ const solveProblems = async () => {
   await delayForMilliseconds(1500);
   await page.evaluate((problemName: string, perfectWhenSubject: string, answers: number[]) => {
     const selectors = [...document.querySelectorAll('table#Answer tr')].slice(1);
+    console.log(selectors);
     selectors.forEach((selector, problemNumber) => {
       const subjectiveInput = selector.querySelector('input');
       if (subjectiveInput) {
@@ -121,7 +122,8 @@ const solveProblems = async () => {
 
       const badges = [...selector.querySelectorAll('span.badge')];
       const answer = (() => {
-        if (perfectWhenSubject && problemName.includes(perfectWhenSubject)) {
+        const isPerfect = perfectWhenSubject && problemName.includes(perfectWhenSubject);
+        if (isPerfect || perfectWhenSubject === '*') {
           return answers[problemNumber];
         }
         const random =  Math.random() * 100;
