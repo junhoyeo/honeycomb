@@ -14,18 +14,7 @@ interface IProblem {
   value: string;
 }
 
-const delayForMilliseconds = (delay: number) => {
-  return new Promise((resolve, _) => {
-    setTimeout(() => {
-      resolve();
-    }, delay);
-  });
-}
-
-const solveProblems = async () => {
-  const browser = await puppeteer.launch({
-    dumpio: true,
-  });
+const solveProblems = async (browser: puppeteer.Browser) => {
   const page = await browser.newPage();
 
   await page.goto(rootURL, { timeout: 0 });
@@ -35,7 +24,10 @@ const solveProblems = async () => {
   await page.$eval('#loginPW', (element, password: string) =>
     (element as HTMLInputElement).value = password, password);
   await page.click('div.login-buttons > button:first-child');
-  await page.goto(`${rootURL}/StudentStudy/TaskList`, { timeout: 0 });
+  await page.goto(`${rootURL}/StudentStudy/TaskList`, {
+    timeout: 0,
+    waitUntil: 'domcontentloaded',
+  });
 
   const uncompletedProblems = await page.evaluate((searchText: string) => {
     const problemRows = [...document.querySelectorAll('tbody > tr')];
@@ -77,7 +69,7 @@ const solveProblems = async () => {
   } = uncompletedProblems[0] as IProblem;
   await page.click(`tr[value='${problemValue}']`);
 
-  await delayForMilliseconds(500);
+  await page.waitFor(500);
   console.log(`📔 Solving '${problemName}'`);
 
   const values = await page.evaluate(() => {
@@ -97,6 +89,7 @@ const solveProblems = async () => {
     type: 'POST',
     async: false,
   }), values, type);
+  console.log(response)
   const { Table01: array } = response;
   const keys = Object.keys(array);
   const answers = keys.map((key) => Number(array[key].QST_CORRECT));
@@ -108,11 +101,12 @@ const solveProblems = async () => {
       element.click();
     }
   });
+  await page.waitForNavigation({ timeout: 0 });
 
-  await delayForMilliseconds(1500);
+  // await page.waitFor(4500);
   await page.evaluate((problemName: string, perfectWhenSubject: string, answers: number[]) => {
     const selectors = [...document.querySelectorAll('table#Answer tr')].slice(1);
-    console.log(selectors);
+    console.log('selectors', selectors)
     selectors.forEach((selector, problemNumber) => {
       const subjectiveInput = selector.querySelector('input');
       if (subjectiveInput) {
@@ -121,6 +115,7 @@ const solveProblems = async () => {
       }
 
       const badges = [...selector.querySelectorAll('span.badge')];
+      console.log('badges', badges)
       const answer = (() => {
         const isPerfect = perfectWhenSubject && problemName.includes(perfectWhenSubject);
         if (isPerfect || perfectWhenSubject === '*') {
@@ -141,7 +136,7 @@ const solveProblems = async () => {
 
   const timeoutBias = Math.floor(Math.random() * 6);
   const timeoutDelayBeforeSubmit = (20 + timeoutBias) * 1000;
-  await delayForMilliseconds(timeoutDelayBeforeSubmit);
+  await page.waitFor(timeoutDelayBeforeSubmit);
 
   await page.evaluate(() => {
     const element = document.querySelector('div.AnswerSubmit > a') as HTMLAnchorElement;
@@ -150,11 +145,20 @@ const solveProblems = async () => {
     }
   });
 
-  await delayForMilliseconds(1500);
+  await page.waitFor(1500);
   await page.screenshot({path: 'example.png'});
-  await browser.close();
 };
 
 (async () => {
-  await solveProblems();
+  const browser = await puppeteer.launch({
+    dumpio: true,
+  });
+  try {
+    await solveProblems(browser);
+  } catch (error) {
+    console.log(error);
+    process.exit();
+  } finally {
+    await browser.close();
+  }
 })();
