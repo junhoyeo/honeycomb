@@ -80,7 +80,6 @@ const solveProblems = async (browser: puppeteer.Browser) => {
       detailvalue: element.getAttribute('detailvalue'),
     }];
   });
-  console.log(values);
   const type = 'ymWuGYYSOfmJLRPkt3xlfw{e}{e}';
 
   const response = await page.evaluate((values: string[], type: string) => $.ajax({
@@ -89,11 +88,9 @@ const solveProblems = async (browser: puppeteer.Browser) => {
     type: 'POST',
     async: false,
   }), values, type);
-  console.log(response)
   const { Table01: array } = response;
   const keys = Object.keys(array);
   const answers = keys.map((key) => Number(array[key].QST_CORRECT));
-  console.log(answers);
 
   await page.evaluate(() => {
     const element = document.querySelector('div.gotoStudy') as HTMLDivElement;
@@ -103,10 +100,8 @@ const solveProblems = async (browser: puppeteer.Browser) => {
   });
   await page.waitForNavigation({ timeout: 0 });
 
-  // await page.waitFor(4500);
   await page.evaluate((problemName: string, perfectWhenSubject: string, answers: number[]) => {
     const selectors = [...document.querySelectorAll('table#Answer tr')].slice(1);
-    console.log('selectors', selectors)
     selectors.forEach((selector, problemNumber) => {
       const subjectiveInput = selector.querySelector('input');
       if (subjectiveInput) {
@@ -115,7 +110,6 @@ const solveProblems = async (browser: puppeteer.Browser) => {
       }
 
       const badges = [...selector.querySelectorAll('span.badge')];
-      console.log('badges', badges)
       const answer = (() => {
         const isPerfect = perfectWhenSubject && problemName.includes(perfectWhenSubject);
         if (isPerfect || perfectWhenSubject === '*') {
