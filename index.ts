@@ -1,6 +1,6 @@
 import * as puppeteer from 'puppeteer';
 import {
-  rootURL,
+  targetURL,
   email,
   password,
   perfect as perfectWhenSubject,
@@ -17,14 +17,14 @@ interface IProblem {
 const solveProblems = async (browser: puppeteer.Browser) => {
   const page = await browser.newPage();
 
-  await page.goto(rootURL, { timeout: 0 });
+  await page.goto(targetURL, { timeout: 0 });
 
   await page.$eval('#loginID', (element, email: string) =>
     (element as HTMLInputElement).value = email, email);
   await page.$eval('#loginPW', (element, password: string) =>
     (element as HTMLInputElement).value = password, password);
   await page.click('div.login-buttons > button:first-child');
-  await page.goto(`${rootURL}/StudentStudy/TaskList`, {
+  await page.goto(targetURL, {
     timeout: 0,
     waitUntil: 'domcontentloaded',
   });
