@@ -36,7 +36,7 @@ const solveProblems = async (browser: puppeteer.Browser) => {
       .flatMap((row) => {
         const problemName = row.querySelector('td:nth-child(5)') as HTMLTableDataCellElement;
         if (!problemName) {
-          return false;
+          return [];
         }
         const problemNameText = problemName.innerText;
         const isDailyTask = problemNameText.includes(searchText);
