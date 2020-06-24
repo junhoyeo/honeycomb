@@ -136,7 +136,10 @@ const solveProblems = async (browser: puppeteer.Browser) => {
 
   const timeoutBias = Math.floor(Math.random() * 6);
   const timeoutDelayBeforeSubmit = (20 + timeoutBias) * 1000;
-  await page.waitFor(timeoutDelayBeforeSubmit);
+    for(let i = 0; i < timeoutDelayBeforeSubmit; i += 1000) {
+      console.log(`waiting for..${i}/${timeoutDelayBeforeSubmit}`);
+      await page.waitFor(1000);
+    }
 
   await page.evaluate(() => {
     const element = document.querySelector('div.AnswerSubmit > a') as HTMLAnchorElement;
