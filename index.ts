@@ -62,11 +62,11 @@ const solveProblems = async (browser: puppeteer.Browser) => {
     await browser.close();
     return;
   }
-  for(let i = 0; i < uncompletedProblems.length; i++) {
+  uncompletedProblems.forEach(async uncompletedProblem => {
     const {
       name: problemName,
       value: problemValue,
-    } = uncompletedProblems[i] as IProblem;
+    } = uncompletedProblem as IProblem;
     await page.click(`tr[value='${problemValue}']`);
 
     await page.waitFor(500);
@@ -91,6 +91,7 @@ const solveProblems = async (browser: puppeteer.Browser) => {
     const { Table01: array } = response;
     const keys = Object.keys(array);
     const answers = keys.map((key) => Number(array[key].QST_CORRECT));
+    console.log(`Answers: ${answers}`);
 
     await page.evaluate(() => {
       const element = document.querySelector('div.gotoStudy') as HTMLDivElement;
@@ -130,10 +131,12 @@ const solveProblems = async (browser: puppeteer.Browser) => {
 
     const timeoutBias = Math.floor(Math.random() * 6);
     const timeoutDelayBeforeSubmit = (20 + timeoutBias) * 1000;
-    for(let i = 0; i < timeoutDelayBeforeSubmit; i += 1000) {
-      console.log(`waiting for..${i}/${timeoutDelayBeforeSubmit}`);
+    console.log('🔒 Solving task started.');
+    for(let i = 0; i < timeoutDelayBeforeSubmit; i += timeoutDelayBeforeSubmit / 100) {
+      console.log(`✏ Solving, ${i / timeoutDelayBeforeSubmit * 100}/100`);
       await page.waitFor(1000);
     }
+    console.log('🔑 Solving task finished!');
 
     await page.evaluate(() => {
       const element = document.querySelector('div.AnswerSubmit > a') as HTMLAnchorElement;
@@ -143,14 +146,14 @@ const solveProblems = async (browser: puppeteer.Browser) => {
     });
 
     await page.waitFor(1500);
-    await page.screenshot({path: 'result.png'});
+    await page.screenshot({ path: 'result.png' });
 
 
     await page.goto(targetURL, {
       timeout: 0,
       waitUntil: 'domcontentloaded',
     });
-  }
+  });
 };
 
 (async () => {
