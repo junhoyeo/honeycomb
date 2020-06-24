@@ -134,7 +134,7 @@ const solveProblems = async (browser: puppeteer.Browser) => {
     console.log('🔒 Solving task started.');
     for(let i = 0; i < timeoutDelayBeforeSubmit; i += timeoutDelayBeforeSubmit / 100) {
       console.log(`✏ Solving, ${i / timeoutDelayBeforeSubmit * 100}/100`);
-      await page.waitFor(1000);
+      await page.waitFor(timeoutDelayBeforeSubmit / 100);
     }
     console.log('🔑 Solving task finished!');
 
