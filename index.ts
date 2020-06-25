@@ -170,8 +170,6 @@ const solveProblems = async (browser: puppeteer.Browser) => {
 (async () => {
   const browser = await puppeteer.launch({
     dumpio: true,
-    args: ['--disable-dev-shm-usage'],
-    headless: false,
   });
   try {
     await solveProblems(browser);
