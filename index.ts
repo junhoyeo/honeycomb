@@ -62,14 +62,15 @@ const solveProblems = async (browser: puppeteer.Browser) => {
   if (!uncompletedProblems.length) {
     console.log('🙌 All problems solved!');
     await page.screenshot({ path: 'result.png' });
-    await browser.close();
     return;
   }
-  uncompletedProblems.forEach(async uncompletedProblem => {
+
+  for (const uncompletedProblem of uncompletedProblems) {
     const {
       name: problemName,
       value: problemValue,
     } = uncompletedProblem as IProblem;
+
     await page.click(`tr[value='${problemValue}']`);
 
     await page.waitFor(500);
@@ -161,12 +162,16 @@ const solveProblems = async (browser: puppeteer.Browser) => {
       timeout: 0,
       waitUntil: 'domcontentloaded',
     });
-  });
+  }
+
+  await page.close();
 };
 
 (async () => {
   const browser = await puppeteer.launch({
     dumpio: true,
+    args: ['--disable-dev-shm-usage'],
+    headless: false,
   });
   try {
     await solveProblems(browser);
