@@ -1,4 +1,6 @@
 import * as puppeteer from 'puppeteer';
+import * as cliProgress from 'cli-progress';
+
 import {
   targetURL,
   email,
@@ -132,9 +134,14 @@ const solveProblems = async (browser: puppeteer.Browser) => {
     const timeoutBias = Math.floor(Math.random() * 6);
     const timeoutDelayBeforeSubmit = (20 + timeoutBias) * 1000;
     console.log('🔒 Solving task started.');
-    for(let i = 0; i < timeoutDelayBeforeSubmit; i += timeoutDelayBeforeSubmit / 100) {
-      console.log(`✏ Solving, ${i / timeoutDelayBeforeSubmit * 100}/100`);
-      await page.waitFor(timeoutDelayBeforeSubmit / 100);
+
+    const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+    progressBar.start(timeoutDelayBeforeSubmit, 0);
+
+    const delayIncrement = timeoutDelayBeforeSubmit / 100;
+    for (let currentDelay = 0; currentDelay < timeoutDelayBeforeSubmit; currentDelay += delayIncrement) {
+      progressBar.update(currentDelay);
+      await page.waitFor(delayIncrement);
     }
     console.log('🔑 Solving task finished!');
 
