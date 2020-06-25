@@ -157,7 +157,6 @@ const solveProblems = async (browser: puppeteer.Browser) => {
     await page.waitFor(1500);
     await page.screenshot({ path: 'result.png' });
 
-
     await page.goto(targetURL, {
       timeout: 0,
       waitUntil: 'domcontentloaded',
