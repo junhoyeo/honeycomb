@@ -61,6 +61,7 @@ const solveProblems = async (browser: puppeteer.Browser) => {
 
   if (!uncompletedProblems.length) {
     console.log('🙌 All problems solved!');
+    await page.screenshot({ path: 'result.png' });
     await browser.close();
     return;
   }
