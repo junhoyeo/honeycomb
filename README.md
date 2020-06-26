@@ -19,6 +19,10 @@
   </blockquote>
 </p>
 
+## 🔨 Changelog
+### 2020-06-25
+### Added
+- 한 번의 실행으로 모든 사탕을 먹어치울 수 있습니다 🍬
 ## 📦 Installation
 
 <img alt="some korean meme" src="./docs/assets/meme-1.jpg" width="512px">
