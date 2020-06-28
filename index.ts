@@ -33,7 +33,7 @@ const solveProblems = async (browser: puppeteer.Browser) => {
     waitUntil: 'domcontentloaded',
   });
 
-  const uncompletedProblems = await page.evaluate((searchText: string) => {
+  const uncompletedProblems = await page.evaluate((searchText: string, isTask: boolean) => {
     const problemRows = [...document.querySelectorAll('tbody > tr')];
     return problemRows
       // @ts-ignore
@@ -59,7 +59,7 @@ const solveProblems = async (browser: puppeteer.Browser) => {
         }
         return [];
       });
-  }, searchText);
+  }, searchText, isTask);
   console.log(uncompletedProblems);
 
   if (!uncompletedProblems.length) {
