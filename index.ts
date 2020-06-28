@@ -11,6 +11,8 @@ import {
 
 declare const $: JQueryStatic;
 
+const isTask = targetURL.includes('task');
+
 interface IProblem {
   name: string;
   value: string;
@@ -36,7 +38,8 @@ const solveProblems = async (browser: puppeteer.Browser) => {
     return problemRows
       // @ts-ignore
       .flatMap((row) => {
-        const problemName = row.querySelector('td:nth-child(5)') as HTMLTableDataCellElement;
+        const selectorForTargetType = `td:nth-child(${isTask ? 5 : 4})`;
+        const problemName = row.querySelector(selectorForTargetType) as HTMLTableDataCellElement;
         if (!problemName) {
           return [];
         }
