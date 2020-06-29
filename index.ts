@@ -38,7 +38,7 @@ const solveProblems = async (browser: puppeteer.Browser) => {
     return problemRows
       // @ts-ignore
       .flatMap((row) => {
-        const selectorForTargetType = `td:nth-child(${isTask ? 5 : 4})`;
+        const selectorForTargetType = `td:nth-child(${isTask ? 4 : 5})`;
         const problemName = row.querySelector(selectorForTargetType) as HTMLTableDataCellElement;
         if (!problemName) {
           return [];
