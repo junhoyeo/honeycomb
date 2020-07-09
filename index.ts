@@ -8,6 +8,7 @@ import {
   perfect as perfectWhenSubject,
   search as searchText,
 } from './credentials.json';
+import console = require('console');
 
 declare const $: JQueryStatic;
 
@@ -166,7 +167,8 @@ const solveProblems = async (browser: puppeteer.Browser) => {
     });
   }
 
-  await page.close();
+  console.log('🏁 Finished.');
+  return await page.close();
 };
 
 (async () => {
@@ -179,6 +181,8 @@ const solveProblems = async (browser: puppeteer.Browser) => {
     console.log(error);
     process.exit();
   } finally {
+    console.log('Return to main function.');
     await browser.close();
+    process.exit();
   }
 })();
