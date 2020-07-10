@@ -109,43 +109,55 @@ const solveProblems = async (browser: puppeteer.Browser) => {
     });
     await page.waitForNavigation({ timeout: 0 });
 
-    await page.evaluate((problemName: string, perfectWhenSubject: string, answers: number[]) => {
-      const selectors = [...document.querySelectorAll('table#Answer tr')].slice(1);
-      selectors.forEach((selector, problemNumber) => {
-        const subjectiveInput = selector.querySelector('input');
-        if (subjectiveInput) {
-          subjectiveInput.value = (answers[problemNumber] || '.') as string;
-          return;
-        }
-
-        const badges = [...selector.querySelectorAll('span.badge')];
-        const answer = (() => {
-          const isPerfect = perfectWhenSubject && problemName.includes(perfectWhenSubject);
-          if (isPerfect || perfectWhenSubject === '*') {
-            return answers[problemNumber];
-          }
-          const random =  Math.random() * 100;
-          if (random <= 50) {
-            return answers[problemNumber];
-          }
-          return Math.floor(Math.random() * 5 + 1);
-        })();
-
-        const badgeNumber = answer - 1;
-        (badges[badgeNumber] as HTMLSpanElement).click();
-      });
-      console.log('✅ Checked all 📝');
-    }, problemName, perfectWhenSubject, answers);
-
     const timeoutBias = Math.floor(Math.random() * 6);
-    const timeoutDelayBeforeSubmit = (20 + timeoutBias) * 1000;
+    const timeoutDelayBeforeSubmit = (21 + timeoutBias) * 1000;
     console.log('🔒 Solving task started.');
 
     const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
     progressBar.start(timeoutDelayBeforeSubmit, 0);
 
     const delayIncrement = timeoutDelayBeforeSubmit / 100;
-    for (let currentDelay = 0; currentDelay < timeoutDelayBeforeSubmit; currentDelay += delayIncrement) {
+    for (let currentDelay = 0; currentDelay <= timeoutDelayBeforeSubmit/2; currentDelay += delayIncrement) {
+      progressBar.update(currentDelay);
+      await page.waitFor(delayIncrement);
+    }
+
+    await page.evaluate((problemName: string, perfectWhenSubject: string, answers: number[]) => {
+      const selectors = [...document.querySelectorAll('table#Answer tr')].slice(1);
+      let delaytime= 0;
+
+      selectors.forEach((selector, problemNumber) => {
+
+        setTimeout(() => {
+          const subjectiveInput = selector.querySelector('input');
+          if (subjectiveInput) {
+            subjectiveInput.value = (answers[problemNumber] || '.') as string;
+            return;
+          }
+
+          const badges = [...selector.querySelectorAll('span.badge')];
+          const answer = (() => {
+            const isPerfect = perfectWhenSubject && problemName.includes(perfectWhenSubject);
+            if (isPerfect || perfectWhenSubject === '*') {
+              return answers[problemNumber];
+            }
+            const random =  Math.random() * 100;
+            if (random <= 50) {
+              return answers[problemNumber];
+            }
+            return Math.floor(Math.random() * 5 + 1);
+          })();
+
+          const badgeNumber = answer - 1;
+          (badges[badgeNumber] as HTMLSpanElement).click();
+        }, delaytime);
+        delaytime += 500;
+        
+      });
+      console.log('✅ Checked all 📝');
+    }, problemName, perfectWhenSubject, answers);
+
+    for (let currentDelay = timeoutDelayBeforeSubmit/2; currentDelay <= timeoutDelayBeforeSubmit; currentDelay += delayIncrement) {
       progressBar.update(currentDelay);
       await page.waitFor(delayIncrement);
     }
