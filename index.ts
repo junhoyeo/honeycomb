@@ -99,7 +99,7 @@ const solveProblems = async (browser: puppeteer.Browser) => {
     const { Table01: array } = response;
     const keys = Object.keys(array);
     const answers = keys.map((key) => Number(array[key].QST_CORRECT));
-    console.log(`Answers: ${answers}`);
+    console.log(`Answers: ${answers.join(', ')}`);
 
     await page.evaluate(() => {
       const element = document.querySelector('div.gotoStudy') as HTMLDivElement;
@@ -109,24 +109,29 @@ const solveProblems = async (browser: puppeteer.Browser) => {
     });
     await page.waitForNavigation({ timeout: 0 });
 
+    const SECONDS = 1000;
+    const MINIMAL_SOLVE_TIME_TO_GET_POINTS = 21;
+
     const timeoutBias = Math.floor(Math.random() * 6);
-    const timeoutDelayBeforeSubmit = (21 + timeoutBias) * 1000;
+    const timeoutDelayBeforeSubmit = (MINIMAL_SOLVE_TIME_TO_GET_POINTS + timeoutBias) * SECONDS;
+
     console.log('🔒 Solving task started.');
 
     const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
     progressBar.start(timeoutDelayBeforeSubmit, 0);
 
     const delayIncrement = timeoutDelayBeforeSubmit / 100;
-    for (let currentDelay = 0; currentDelay <= timeoutDelayBeforeSubmit/2; currentDelay += delayIncrement) {
+    const delayForHalf = timeoutDelayBeforeSubmit / 2;
+
+    for (let currentDelay = 0; currentDelay <= delayForHalf; currentDelay += delayIncrement) {
       progressBar.update(currentDelay);
       await page.waitFor(delayIncrement);
     }
 
     await page.evaluate((problemName: string, perfectWhenSubject: string, answers: number[]) => {
       const selectors = [...document.querySelectorAll('table#Answer tr')].slice(1);
-      let delaytime= 0;
-
       selectors.forEach((selector, problemNumber) => {
+        const delayForEachSelect = problemNumber * 500;
 
         setTimeout(() => {
           const subjectiveInput = selector.querySelector('input');
@@ -150,18 +155,17 @@ const solveProblems = async (browser: puppeteer.Browser) => {
 
           const badgeNumber = answer - 1;
           (badges[badgeNumber] as HTMLSpanElement).click();
-        }, delaytime);
-        delaytime += 500;
-        
+        }, delayForEachSelect);
       });
-      console.log('✅ Checked all 📝');
+      console.log('\n✅ Checked all 📝');
     }, problemName, perfectWhenSubject, answers);
 
-    for (let currentDelay = timeoutDelayBeforeSubmit/2; currentDelay <= timeoutDelayBeforeSubmit; currentDelay += delayIncrement) {
+    for (let currentDelay = delayForHalf; currentDelay <= timeoutDelayBeforeSubmit; currentDelay += delayIncrement) {
       progressBar.update(currentDelay);
       await page.waitFor(delayIncrement);
     }
-    console.log('🔑 Solving task finished!');
+
+    console.log('\n🔑 Solving task finished!');
 
     await page.evaluate(() => {
       const element = document.querySelector('div.AnswerSubmit > a') as HTMLAnchorElement;
