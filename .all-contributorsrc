@@ -1,0 +1,55 @@
+{
+  "projectName": "honeycomb",
+  "projectOwner": "Junho Yeo",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "junhoyeo",
+      "name": "Junho Yeo",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/32605822?v=4",
+      "profile": "https://trendy-resume.now.sh/",
+      "contributions": [
+        "code",
+        "doc",
+        "maintenance"
+      ]
+    },
+    {
+      "login": "electrochemistry04",
+      "name": "LEETJ",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/48921632?v=4",
+      "profile": "https://github.com/electrochemistry04",
+      "contributions": [
+        "code",
+        "bug"
+      ]
+    },
+    {
+      "login": "HyeokjinKang",
+      "name": "Coupy",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/63301941?v=4",
+      "profile": "https://github.com/HyeokjinKang",
+      "contributions": [
+        "code",
+        "bug"
+      ]
+    },
+    {
+      "login": "rycont",
+      "name": "RyCont (정한)",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/35295182?v=4",
+      "profile": "https://github.com/rycont",
+      "contributions": [
+        "ideas"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7
+}
