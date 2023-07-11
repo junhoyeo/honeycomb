@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "@types/cli-progress": "^3.8.0",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "cli-progress": "^3.8.2",
     "esm": "^3.2.25",
     "puppeteer": "^5.5.0"
